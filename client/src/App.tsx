@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { GameScreen } from './components/GameScreen';
 import { LobbyScreen } from './components/LobbyScreen';
-import { Card, CardsEvent, GameCreatedEvent, GameStartedEvent, Player, PlayersEvent } from './types';
+import { Card, CardsEvent, GameCreatedEvent, GameStartedEvent, Player, PlayersEvent, GameStateEvent, CardDrawnEvent, TrickCompleteEvent } from './types';
 
-const socket = io('http://localhost:3001');
+export const socket = io('http://localhost:3001');
 
 function App() {
   const [playerName, setPlayerName] = useState('');
@@ -35,6 +35,20 @@ function App() {
       setDrawPileCount(drawPileCount);
     });
 
+    socket.on('cardDrawn', ({ card, drawPileCount }: CardDrawnEvent) => {
+      setCards(prev => [...prev, card]);
+      setDrawPileCount(drawPileCount);
+    });
+
+    socket.on('gameState', ({ gameState }: GameStateEvent) => {
+      setPlayers(gameState.players);
+      setDrawPileCount(gameState.drawPileCount);
+    });
+
+    socket.on('trickComplete', ({ players: updated }: TrickCompleteEvent) => {
+      setPlayers(updated);
+    });
+
     socket.on('error', (message: string) => {
       setError(message);
     });
@@ -44,6 +58,9 @@ function App() {
       socket.off('playerJoined');
       socket.off('gameStarted');
       socket.off('dealCards');
+      socket.off('cardDrawn');
+      socket.off('gameState');
+      socket.off('trickComplete');
       socket.off('error');
     };
   }, []);
@@ -92,6 +109,12 @@ function App() {
       currentPlayerId={socket.id || ''}
       cards={cards}
       drawPileCount={drawPileCount}
+      onPlayHand={(indices: number[]) => {
+        const selectedCards = indices.map(i => cards[i]);
+        socket.emit('playHand', { cards: selectedCards });
+        setCards(prev => prev.filter((_, idx) => !indices.includes(idx)));
+        setError('');
+      }}
     />
   );
 }

@@ -15,6 +15,7 @@ export interface Player {
   id: string;
   name: string;
   score: number;
+  cardCount: number;
 }
 
 export interface GameState {
@@ -47,6 +48,16 @@ export interface GameStateEvent {
 export interface CardsEvent {
   cards: Card[];
   drawPileCount: number;
+}
+
+export interface CardDrawnEvent {
+  card: Card;
+  drawPileCount: number;
+}
+
+export interface TrickCompleteEvent {
+  winningPlayerId: string;
+  players: Player[];
 }
 
 export interface PlayHandEvent {

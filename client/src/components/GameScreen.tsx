@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { Card as CardType, Player } from '../types';
 import { CardHand } from './CardHand';
+import { useState } from 'react';
 
 const Container = styled.div`
   width: 100vw;
@@ -118,6 +119,7 @@ interface GameScreenProps {
   currentPlayerId: string;
   cards: CardType[];
   drawPileCount: number;
+  onPlayHand: (indices: number[]) => void;
 }
 
 const getPlayerPositions = (players: Player[], currentPlayerId: string) => {
@@ -145,8 +147,30 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   currentPlayerId,
   cards,
   drawPileCount,
+  onPlayHand
 }) => {
   const otherPlayers = getPlayerPositions(players, currentPlayerId);
+  const currentPlayer = players.find(p => p.id === currentPlayerId);
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+
+  const toggleCardSelection = (index: number) => {
+    setSelectedIndices(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
+  const confirmPlay = () => {
+    if (onPlayHand && selectedIndices.size > 0) {
+      onPlayHand(Array.from(selectedIndices));
+      setSelectedIndices(new Set());
+    }
+  };
 
   return (
     <Container>
@@ -156,16 +180,31 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           <PlayerPosition key={player.id} position={player.position}>
             <PlayerInfo>
               <h3>{player.name}</h3>
-              <p>Cards: {cards.length}</p>
+              <p>Cards: {player.cardCount}</p>
+              <p>Score: {player.score}</p>
             </PlayerInfo>
           </PlayerPosition>
         ))}
         <DrawPile>
           <DrawPileCount>{drawPileCount} cards</DrawPileCount>
         </DrawPile>
-        <UserPlayerInfo >
-            <CardHand cards={cards} />
+        <UserPlayerInfo>
+          {currentPlayer && (
+            <PlayerInfo>
+              <h3>{currentPlayer.name} (You)</h3>
+              <p>Cards: {currentPlayer.cardCount}</p>
+              <p>Score: {currentPlayer.score}</p>
+            </PlayerInfo>
+          )}
+          <CardHand
+            cards={cards}
+            selectedIndices={selectedIndices}
+            onCardClick={toggleCardSelection}
+          />
         </UserPlayerInfo>
+        <button onClick={confirmPlay} disabled={selectedIndices.size === 0}>
+          Play Selected Hand
+        </button>
       </GameTable>
     </Container>
   );

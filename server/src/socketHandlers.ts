@@ -70,13 +70,43 @@ export function handleJoinGame(io: Server, socket: Socket, data: { gameCode: str
     return;
   }
 
-  if (game.players.length >= 4) {
-    socket.emit('error', 'Game is full');
+  // Reconnection logic: if name exists but socket is disconnected, update id and rejoin
+  const existingPlayer = game.players.find(p => p.name === playerName);
+  if (existingPlayer) {
+    // If player name is taken by an active socket, reject
+    if (io.sockets.sockets.has(existingPlayer.id)) {
+      socket.emit('error', 'Player name already exists');
+      return;
+    }
+    // Otherwise, treat as reconnection
+    existingPlayer.id = socket.id;
+    socket.join(gameCode);
+    io.to(gameCode).emit('playerRejoined', {
+      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length }))
+    });
+    // Send rejoin success with full game state
+    socket.emit('rejoinSuccess', {
+      playerId: socket.id,
+      gameState: {
+        currentTurn: game.currentTurn,
+        currentTrick: game.currentTrick,
+        lastValidHand: game.lastValidHand,
+        drawPileCount: game.drawPile.length,
+        players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length })),
+        status: game.status
+      }
+    });
+    // Send private cards to rejoined player
+    socket.emit('dealCards', {
+      cards: existingPlayer.cards,
+      drawPileCount: game.drawPile.length
+    });
     return;
   }
 
-  if (game.players.filter(p => p.name === playerName).length > 0) {
-    socket.emit('error', 'Player name already exists');
+  // New player joining
+  if (game.players.length >= 4) {
+    socket.emit('error', 'Game is full');
     return;
   }
 
@@ -89,7 +119,7 @@ export function handleJoinGame(io: Server, socket: Socket, data: { gameCode: str
 
   socket.join(gameCode);
   io.to(gameCode).emit('playerJoined', {
-    players: game.players.map(p => ({ id: p.id, name: p.name }))
+    players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length }))
   });
 }
 
@@ -131,7 +161,7 @@ export function handleStartGame(io: Server, socket: Socket, gameCode: string) {
     game.deck = []; // Clear the main deck as all cards are either dealt or in draw pile
     
     io.to(gameCode).emit('gameStarted', {
-      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score })),
+      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length })),
       currentTurn: game.currentTurn,
       drawPileCount: game.drawPile.length
     });
@@ -209,7 +239,7 @@ export function handlePlayHand(io: Server, socket: Socket, data: { gameCode: str
     // Emit trick result
     io.to(gameCode).emit('trickComplete', {
       winningPlayerId: winningHand.playerId,
-      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score }))
+      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length }))
     });
   } else {
     // Move to next player
@@ -220,7 +250,7 @@ export function handlePlayHand(io: Server, socket: Socket, data: { gameCode: str
   if (game.players.some(p => p.cards.length === 0)) {
     game.status = 'finished';
     io.to(gameCode).emit('gameOver', {
-      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score }))
+      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length }))
     });
   } else {
     // Emit updated game state
@@ -229,7 +259,7 @@ export function handlePlayHand(io: Server, socket: Socket, data: { gameCode: str
       currentTrick: game.currentTrick,
       lastValidHand: game.lastValidHand,
       drawPileCount: game.drawPile.length,
-      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score })),
+      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length })),
       status: game.status
     });
   }
@@ -289,7 +319,7 @@ export function handlePass(io: Server, socket: Socket, gameCode: string) {
     // Emit trick result
     io.to(gameCode).emit('trickComplete', {
       winningPlayerId: winningHand.playerId,
-      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score }))
+      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length }))
     });
   } else {
     // Move to next player
@@ -302,22 +332,27 @@ export function handlePass(io: Server, socket: Socket, gameCode: string) {
     currentTrick: game.currentTrick,
     lastValidHand: game.lastValidHand,
     drawPileCount: game.drawPile.length,
-    players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score })),
+    players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length })),
     status: game.status
   });
 }
 
 export function handleDisconnect(io: Server, socket: Socket) {
   games.forEach((game, gameCode) => {
-    const playerIndex = game.players.findIndex(p => p.id === socket.id);
-    if (playerIndex !== -1) {
-      game.players.splice(playerIndex, 1);
-      if (game.players.length === 0) {
+    const player = game.players.find(p => p.id === socket.id);
+    if (player) {
+      // Remove socket from room
+      socket.leave(gameCode);
+      // Notify others that player disconnected
+      io.to(gameCode).emit('playerDisconnected', {
+        id: player.id,
+        name: player.name
+      });
+
+      // If no more sockets in the room, drop the game
+      const room = io.sockets.adapter.rooms.get(gameCode);
+      if (!room || room.size === 0) {
         games.delete(gameCode);
-      } else {
-        io.to(gameCode).emit('playerLeft', {
-          players: game.players.map(p => ({ id: p.id, name: p.name }))
-        });
       }
     }
   });

@@ -34,6 +34,13 @@ const Card = styled.div<{ index: number }>`
   &.red {
     color: red;
   }
+
+  &.selected {
+    transform: translateY(-30px) !important;
+    border-color: gold !important;
+    box-shadow: 0 0 10px gold !important;
+    z-index: 1000;
+  }
 `
 
 const CardContent = styled.div`
@@ -56,21 +63,24 @@ const Rank = styled.div`
 
 interface CardHandProps {
   cards: CardType[];
+  selectedIndices?: Set<number>;
+  onCardClick?: (index: number) => void;
 }
 
 const isRedSuit = (suit: CardType['suit']) => {
   return suit === '♥' || suit === '♦';
 };
 
-export const CardHand: React.FC<CardHandProps> = ({ cards }) => {
+export const CardHand: React.FC<CardHandProps> = ({ cards, selectedIndices = new Set(), onCardClick }) => {
   return (
     <HandContainer cards={cards.length}>
       {cards.map((card, index) => (
         <Card
           key={index}
           index={index}
-          className={isRedSuit(card.suit) ? 'red' : ''}
-          style={{ zIndex: index }}
+          className={`${isRedSuit(card.suit) ? 'red' : ''}${selectedIndices.has(index) ? ' selected' : ''}`}
+          style={{ zIndex: selectedIndices.has(index) ? cards.length + index : index }}
+          onClick={() => onCardClick && onCardClick(index)}
         >
           <CardContent>
             <Suit>{card.suit}</Suit>

@@ -118,7 +118,7 @@ describe('Game Logic', () => {
       expect(compareCards(diamond, heart)).toBeGreaterThan(0);
     });
 
-    it('should follow suit hierarchy (♦ > ♥ > ♠ > ♣)', () => {
+    it('should follow suit hierarchy', () => {
       const diamond: Card = { suit: '♦', rank: '5' };
       const heart: Card = { suit: '♥', rank: '5' };
       const spade: Card = { suit: '♠', rank: '5' };
@@ -147,7 +147,7 @@ describe('Game Logic', () => {
       expect(compareHands(hand1, hand2)).toBeLessThan(0);
     });
 
-    it('should compare pairs by highest card', () => {
+    it('should compare pairs by winning suit', () => {
       const hand1: PlayedHand = {
         type: 'pair',
         cards: [
@@ -159,8 +159,28 @@ describe('Game Logic', () => {
       const hand2: PlayedHand = {
         type: 'pair',
         cards: [
-          { suit: '♦', rank: '5' },
-          { suit: '♣', rank: '5' }
+          { suit: '♦', rank: '2' },
+          { suit: '♣', rank: '2' }
+        ],
+        playerId: 'player2'
+      };
+      expect(compareHands(hand1, hand2)).toBeLessThan(0);
+    });
+
+    it('should compare pairs by rank', () => {
+      const hand1: PlayedHand = {
+        type: 'pair',
+        cards: [
+          { suit: '♠', rank: '5' },
+          { suit: '♥', rank: '5' }
+        ],
+        playerId: 'player1'
+      };
+      const hand2: PlayedHand = {
+        type: 'pair',
+        cards: [
+          { suit: '♦', rank: '7' },
+          { suit: '♥', rank: '7' }
         ],
         playerId: 'player2'
       };
@@ -197,10 +217,10 @@ describe('Game Logic', () => {
     it('should validate hand that can beat previous hand', () => {
       const previousHand: PlayedHand = {
         type: 'single',
-        cards: [{ suit: '♠', rank: '5' }],
+        cards: [{ suit: '♣', rank: 'K' }],
         playerId: 'player1'
       };
-      const hand: Card[] = [{ suit: '♦', rank: '5' }];
+      const hand: Card[] = [{ suit: '♠', rank: '3' }];
       const result = validateHand(hand, previousHand);
       expect(result.valid).toBe(true);
       expect(result.type).toBe('single');
@@ -212,7 +232,7 @@ describe('Game Logic', () => {
         cards: [{ suit: '♦', rank: '5' }],
         playerId: 'player1'
       };
-      const hand: Card[] = [{ suit: '♠', rank: '5' }];
+      const hand: Card[] = [{ suit: '♠', rank: '10' }];
       const result = validateHand(hand, previousHand);
       expect(result.valid).toBe(false);
     });
