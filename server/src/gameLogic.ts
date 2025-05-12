@@ -18,11 +18,11 @@ export interface PlayedHand {
   playerId: string;
 }
 
-const SUIT_HIERARCHY = {
-  [SUITS.DIAMONDS]: 4,
-  [SUITS.HEARTS]: 3,
-  [SUITS.SPADES]: 2,
-  [SUITS.CLUBS]: 1,
+const SUIT_HIERARCHY: Record<string, string[]> = {
+  [SUITS.DIAMONDS]: [],
+  [SUITS.HEARTS]: [SUITS.CLUBS, SUITS.DIAMONDS],
+  [SUITS.SPADES]: [SUITS.HEARTS, SUITS.DIAMONDS],
+  [SUITS.CLUBS]: [SUITS.SPADES, SUITS.DIAMONDS],
 } as const;
 
 const RANK_VALUES = {
@@ -101,7 +101,7 @@ export function compareCards(card1: Card, card2: Card): number {
   if (card2.suit == SUITS.DIAMONDS) return -1;
 
   // Consider suit hierarchy
-  return (SUIT_HIERARCHY[card1.suit] % 3) - (SUIT_HIERARCHY[card2.suit] % 3);
+  return SUIT_HIERARCHY[card1.suit].includes(card2.suit) ? -1 : 1;
 }
 
 // Compare two hands
