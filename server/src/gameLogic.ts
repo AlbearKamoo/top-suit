@@ -12,7 +12,7 @@ export interface Card {
 
 export type HandType = "single" | "pair" | "triple" | "quad" | "run" | "none";
 
-interface PlayedHand {
+export interface PlayedHand {
   type: HandType;
   cards: Card[];
   playerId: string;

@@ -2,8 +2,8 @@ import cors from 'cors';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { Card } from './gameLogic';
-import { generateGameCode, shuffle } from './helpers';
+import { handleCreateGame, handleJoinGame, handleStartGame, handleDisconnect, handlePlayHand, handlePass } from './socketHandlers';
+
 const app = express();
 app.use(cors());
 const httpServer = createServer(app);
@@ -14,157 +14,15 @@ const io = new Server(httpServer, {
   }
 });
 
-interface Player {
-  id: string;
-  name: string;
-  cards: Card[];
-}
-
-interface Game {
-  id: string;
-  players: Player[];
-  deck: Card[];
-  drawPile: Card[];
-  currentTurn: number;
-  status: 'waiting' | 'playing' | 'finished';
-}
-
-const games = new Map<string, Game>();
-
-// Create a new deck of cards
-function createDeck(): Card[] {
-  const suits = ['♠', '♥', '♣', '♦'] as const;
-  const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'] as const;
-  const deck: Card[] = [];
-  
-  for (const suit of suits) {
-    for (const rank of ranks) {
-      deck.push({ suit, rank });
-    }
-  }
-  
-  return shuffle(deck);
-}
-
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  // Create a new game
-  socket.on('createGame', (playerName: string) => {
-    const gameCode = generateGameCode();
-    const game: Game = {
-      id: gameCode,
-      players: [{
-        id: socket.id,
-        name: playerName,
-        cards: []
-      }],
-      deck: createDeck(),
-      drawPile: [],
-      currentTurn: 0,
-      status: 'waiting'
-    };
-    
-    games.set(gameCode, game);
-    socket.join(gameCode);
-    socket.emit('gameCreated', { gameCode, playerId: socket.id });
-  });
-
-  // Join an existing game
-  socket.on('joinGame', ({ gameCode, playerName }: { gameCode: string, playerName: string }) => {
-    const game = games.get(gameCode);
-    
-    if (!game) {
-      socket.emit('error', 'Game not found');
-      return;
-    }
-
-    if (game.players.length >= 4) {
-      socket.emit('error', 'Game is full');
-      return;
-    }
-
-    if (game.players.filter(p => p.name === playerName).length > 0) {
-      socket.emit('error', 'Player name already exists');
-      return;
-    }
-
-    game.players.push({
-      id: socket.id,
-      name: playerName,
-      cards: []
-    });
-
-    socket.join(gameCode);
-    io.to(gameCode).emit('playerJoined', {
-      players: game.players.map(p => ({ id: p.id, name: p.name }))
-    });
-  });
-
-  socket.on('startGame', (gameCode: string) => {
-    console.log(gameCode)
-    const game = games.get(gameCode);
-
-    if (!game) {
-      socket.emit('error', 'Game not found');
-      return;
-    }
-
-    if (game.players.length !== 3 && game.players.length !== 4) {
-      socket.emit('error', 'Must have 3 or 4 players to start the game');
-      return;
-    }
-
-    // Start the game if we have 3 or 4 players
-    if (game.players.length >= 3) {
-      game.status = 'playing';
-      
-      // Determine cards per player based on player count
-      const cardsPerPlayer = game.players.length === 3 ? 10 : 8;
-      
-      // Deal cards to players
-      game.players.forEach((player, index) => {
-        player.cards = game.deck.slice(index * cardsPerPlayer, (index + 1) * cardsPerPlayer);
-      });
-
-      // Set remaining cards as draw pile
-      const totalDealtCards = cardsPerPlayer * game.players.length;
-      game.drawPile = game.deck.slice(totalDealtCards);
-      game.deck = []; // Clear the main deck as all cards are either dealt or in draw pile
-      
-      io.to(gameCode).emit('gameStarted', {
-        players: game.players.map(p => ({ id: p.id, name: p.name })),
-        currentTurn: game.currentTurn,
-        drawPileCount: game.drawPile.length
-      });
-
-      // Send private messages to each player with their cards
-      game.players.forEach(player => {
-        io.to(player.id).emit('dealCards', { 
-          cards: player.cards,
-          drawPileCount: game.drawPile.length
-        });
-      });
-    }
-  });
-
-  // Handle disconnection
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-    games.forEach((game, gameCode) => {
-      const playerIndex = game.players.findIndex(p => p.id === socket.id);
-      if (playerIndex !== -1) {
-        game.players.splice(playerIndex, 1);
-        if (game.players.length === 0) {
-          games.delete(gameCode);
-        } else {
-          io.to(gameCode).emit('playerLeft', {
-            players: game.players.map(p => ({ id: p.id, name: p.name }))
-          });
-        }
-      }
-    });
-  });
+  socket.on('createGame', (playerName: string) => handleCreateGame(io, socket, playerName));
+  socket.on('joinGame', (data) => handleJoinGame(io, socket, data));
+  socket.on('startGame', (gameCode: string) => handleStartGame(io, socket, gameCode));
+  socket.on('playHand', (data) => handlePlayHand(io, socket, data));
+  socket.on('pass', (gameCode: string) => handlePass(io, socket, gameCode));
+  socket.on('disconnect', () => handleDisconnect(io, socket));
 });
 
 const PORT = process.env.PORT || 3001;
