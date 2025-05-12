@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Player, Card as CardType } from '../types';
+import { Card as CardType, Player } from '../types';
 import { CardHand } from './CardHand';
 
 const Container = styled.div`
@@ -62,11 +62,18 @@ const PlayerInfo = styled.div`
   }
 `
 
+const UserPlayerInfo = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-self: flex-end;
+  margin-bottom: 20px
+`
+
 const DrawPile = styled.div`
   position: relative;
   width: 70px;
   height: 100px;
-  left: 300px;
+  left: 400px;
   
   &::before {
     content: '';
@@ -156,12 +163,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         <DrawPile>
           <DrawPileCount>{drawPileCount} cards</DrawPileCount>
         </DrawPile>
-        <PlayerPosition position="bottom">
-          <PlayerInfo>
-            <h3>You</h3>
+        <UserPlayerInfo >
             <CardHand cards={cards} />
-          </PlayerInfo>
-        </PlayerPosition>
+        </UserPlayerInfo>
       </GameTable>
     </Container>
   );

@@ -1,8 +1,9 @@
 import styled from '@emotion/styled';
 import { Card as CardType } from '../types';
 
-const HandContainer = styled.div`
+const HandContainer = styled.div<{ cards: number}>`
   display: flex;
+  width : ${props => props.cards * 30 + 40}px;
   position: relative;
   height: 120px;
   margin-top: 1rem;
@@ -63,7 +64,7 @@ const isRedSuit = (suit: CardType['suit']) => {
 
 export const CardHand: React.FC<CardHandProps> = ({ cards }) => {
   return (
-    <HandContainer>
+    <HandContainer cards={cards.length}>
       {cards.map((card, index) => (
         <Card
           key={index}

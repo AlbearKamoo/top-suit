@@ -1,7 +1,8 @@
+import cors from 'cors';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import cors from 'cors';
+import { Card } from './gameLogic';
 import { generateGameCode, shuffle } from './helpers';
 const app = express();
 app.use(cors());
@@ -12,11 +13,6 @@ const io = new Server(httpServer, {
     methods: ["GET", "POST"]
   }
 });
-
-interface Card {
-  suit: '♠' | '♥' | '♣' | '♦';
-  rank: '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A';
-}
 
 interface Player {
   id: string;
@@ -88,6 +84,11 @@ io.on('connection', (socket) => {
       return;
     }
 
+    if (game.players.filter(p => p.name === playerName).length > 0) {
+      socket.emit('error', 'Player name already exists');
+      return;
+    }
+
     game.players.push({
       id: socket.id,
       name: playerName,
@@ -98,6 +99,21 @@ io.on('connection', (socket) => {
     io.to(gameCode).emit('playerJoined', {
       players: game.players.map(p => ({ id: p.id, name: p.name }))
     });
+  });
+
+  socket.on('startGame', (gameCode: string) => {
+    console.log(gameCode)
+    const game = games.get(gameCode);
+
+    if (!game) {
+      socket.emit('error', 'Game not found');
+      return;
+    }
+
+    if (game.players.length !== 3 && game.players.length !== 4) {
+      socket.emit('error', 'Must have 3 or 4 players to start the game');
+      return;
+    }
 
     // Start the game if we have 3 or 4 players
     if (game.players.length >= 3) {

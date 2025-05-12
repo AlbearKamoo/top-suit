@@ -61,6 +61,7 @@ interface LobbyScreenProps {
   onGameCodeChange: (code: string) => void;
   onCreateGame: () => void;
   onJoinGame: () => void;
+  onStartGame: () => void;
 }
 
 export const LobbyScreen: React.FC<LobbyScreenProps> = ({
@@ -72,6 +73,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   onGameCodeChange,
   onCreateGame,
   onJoinGame,
+  onStartGame
 }) => {
   return (
     <Container>
@@ -96,6 +98,10 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
         />
         <Button onClick={onJoinGame}>Join Game</Button>
       </div>
+      {players.length >= 3 && (<div>
+        <Button onClick={onStartGame}>Start Game</Button>
+      </div>
+      )}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {gameCode && (
         <div>

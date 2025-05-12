@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
-import { Card, Player, GameCreatedEvent, PlayersEvent, GameStartedEvent, CardsEvent } from './types';
-import { LobbyScreen } from './components/LobbyScreen';
 import { GameScreen } from './components/GameScreen';
+import { LobbyScreen } from './components/LobbyScreen';
+import { Card, CardsEvent, GameCreatedEvent, GameStartedEvent, Player, PlayersEvent } from './types';
 
 const socket = io('http://localhost:3001');
 
@@ -66,6 +66,10 @@ function App() {
     }
   };
 
+  const handleStartGame = () => {
+    socket.emit('startGame', gameCode);
+  };
+
   if (!gameStarted) {
     return (
       <LobbyScreen
@@ -77,6 +81,7 @@ function App() {
         onGameCodeChange={setGameCode}
         onCreateGame={handleCreateGame}
         onJoinGame={handleJoinGame}
+        onStartGame={handleStartGame}
       />
     );
   }
