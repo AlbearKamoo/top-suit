@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { GameScreen } from './components/GameScreen';
 import { LobbyScreen } from './components/LobbyScreen';
-import { Card, CardsEvent, GameCreatedEvent, GameStartedEvent, Player, PlayersEvent, GameStateEvent, CardDrawnEvent, TrickCompleteEvent } from './types';
+import { Card, CardsEvent, GameCreatedEvent, GameStartedEvent, Player, PlayersEvent, GameStateEvent, CardDrawnEvent, TrickCompleteEvent, PlayedHand } from './types';
 
 export const socket = io('http://localhost:3001');
 
@@ -14,6 +14,7 @@ function App() {
   const [gameStarted, setGameStarted] = useState(false);
   const [error, setError] = useState('');
   const [drawPileCount, setDrawPileCount] = useState(0);
+  const [currentTrick, setCurrentTrick] = useState<PlayedHand[]>([]);
 
   useEffect(() => {
     socket.on('gameCreated', ({ gameCode }: GameCreatedEvent) => {
@@ -28,6 +29,7 @@ function App() {
       setPlayers(players);
       setGameStarted(true);
       setDrawPileCount(drawPileCount);
+      setCurrentTrick([]);
     });
 
     socket.on('dealCards', ({ cards, drawPileCount }: CardsEvent) => {
@@ -41,8 +43,10 @@ function App() {
     });
 
     socket.on('gameState', ({ gameState }: GameStateEvent) => {
+      console.log("GAME STATE", JSON.stringify(gameState))
       setPlayers(gameState.players);
       setDrawPileCount(gameState.drawPileCount);
+      setCurrentTrick(gameState.currentTrick);
     });
 
     socket.on('trickComplete', ({ players: updated }: TrickCompleteEvent) => {
@@ -109,9 +113,10 @@ function App() {
       currentPlayerId={socket.id || ''}
       cards={cards}
       drawPileCount={drawPileCount}
+      currentTrick={currentTrick}
       onPlayHand={(indices: number[]) => {
         const selectedCards = indices.map(i => cards[i]);
-        socket.emit('playHand', { cards: selectedCards });
+        socket.emit('playHand', { gameCode, cards: selectedCards });
         setCards(prev => prev.filter((_, idx) => !indices.includes(idx)));
         setError('');
       }}

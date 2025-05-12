@@ -177,16 +177,19 @@ export function handleStartGame(io: Server, socket: Socket, gameCode: string) {
 }
 
 export function handlePlayHand(io: Server, socket: Socket, data: { gameCode: string, cards: Card[] }) {
+  console.log("PLAY HAND", data)
   const { gameCode, cards } = data;
   const game = games.get(gameCode);
 
   if (!game) {
     socket.emit('error', 'Game not found');
+    console.log("GAME NOT FOUND")
     return;
   }
 
   // Check if it's the player's turn
   if (game.players[game.currentTurn].id !== socket.id) {
+    console.log("NOT YOUR TURN", game.players[game.currentTurn].id, socket.id)
     socket.emit('error', 'Not your turn');
     return;
   }
@@ -194,6 +197,7 @@ export function handlePlayHand(io: Server, socket: Socket, data: { gameCode: str
   // Validate the played hand
   const validation = validateHand(cards, game.lastValidHand);
   if (!validation.valid) {
+    console.log("INVALID HAND", validation.error)
     socket.emit('error', validation.error);
     return;
   }
@@ -215,6 +219,7 @@ export function handlePlayHand(io: Server, socket: Socket, data: { gameCode: str
     cards,
     playerId: socket.id
   };
+  console.log("PLAYED HAND", playedHand)
   game.currentTrick.push(playedHand);
 
   // Update the last valid hand if this wasn't a pass
@@ -253,15 +258,17 @@ export function handlePlayHand(io: Server, socket: Socket, data: { gameCode: str
       players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length }))
     });
   } else {
+
+    console.log("GAME STATE", JSON.stringify(game))
     // Emit updated game state
-    io.to(gameCode).emit('gameState', {
+    io.to(gameCode).emit('gameState', { gameState: {
       currentTurn: game.currentTurn,
       currentTrick: game.currentTrick,
       lastValidHand: game.lastValidHand,
       drawPileCount: game.drawPile.length,
       players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length })),
       status: game.status
-    });
+    }});
   }
 }
 

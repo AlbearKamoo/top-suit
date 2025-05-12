@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Card as CardType, Player } from '../types';
+import { Card as CardType, Player, PlayedHand } from '../types';
 import { CardHand } from './CardHand';
 import { useState } from 'react';
 
@@ -12,6 +12,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-sizing: border-box;
 `
 
 const GameTable = styled.div`
@@ -114,12 +115,31 @@ const DrawPileCount = styled.div`
   z-index: 1;
 `
 
+// Container for displaying played hands on the table
+const PlayedHandPosition = styled.div<{ position: 'top' | 'left' | 'right' | 'bottom' }>`
+  position: absolute;
+  padding: 4px;
+  ${({ position }) => {
+    switch (position) {
+      case 'top':
+        return 'top: 100px; left: 50%; transform: translateX(-50%);';
+      case 'left':
+        return 'left: 100px; top: 50%; transform: translateY(-50%);';
+      case 'right':
+        return 'right: 100px; top: 50%; transform: translateY(-50%);';
+      case 'bottom':
+        return 'bottom: 100px; left: 50%; transform: translateX(-50%);';
+    }
+  }}
+`;
+
 interface GameScreenProps {
   players: Player[];
   currentPlayerId: string;
   cards: CardType[];
   drawPileCount: number;
   onPlayHand: (indices: number[]) => void;
+  currentTrick: PlayedHand[];
 }
 
 const getPlayerPositions = (players: Player[], currentPlayerId: string) => {
@@ -147,20 +167,28 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   currentPlayerId,
   cards,
   drawPileCount,
-  onPlayHand
+  onPlayHand,
+  currentTrick
 }) => {
   const otherPlayers = getPlayerPositions(players, currentPlayerId);
   const currentPlayer = players.find(p => p.id === currentPlayerId);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
 
+  // Map of played hands by playerId
+  const playedHandMap: Record<string, PlayedHand> = {};
+  currentTrick.forEach(hand => {
+    playedHandMap[hand.playerId] = hand;
+  });
+  // Position mapping for all players
+  const positionMap: Record<string, 'top' | 'left' | 'right' | 'bottom'> = {};
+  otherPlayers.forEach(p => { positionMap[p.id] = p.position; });
+  positionMap[currentPlayerId] = 'bottom';
+
   const toggleCardSelection = (index: number) => {
     setSelectedIndices(prev => {
       const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
       return next;
     });
   };
@@ -172,10 +200,23 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     }
   };
 
+  console.log(playedHandMap)
+
   return (
     <Container>
       <h1>Game Started!</h1>
       <GameTable>
+        {/* Render played hands at each player's position */}
+        {players.map(player => {
+          const hand = playedHandMap[player.id];
+          if (!hand) return null;
+          const pos = positionMap[player.id];
+          return (
+            <PlayedHandPosition key={player.id} position={pos}>
+              <CardHand cards={hand.cards} />
+            </PlayedHandPosition>
+          );
+        })}
         {otherPlayers.map(player => (
           <PlayerPosition key={player.id} position={player.position}>
             <PlayerInfo>
