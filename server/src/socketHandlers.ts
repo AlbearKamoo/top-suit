@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { Card, PlayedHand } from '@shared/types';
-import { validateHand, getNextPlayer, isTrickComplete, findWinningHand } from './gameLogic';
+import { isTrickComplete, findWinningHand } from './gameLogic';
+import { validateHand } from '@shared/gameLogic';
 import { generateGameCode, shuffle } from './helpers';
 
 interface Player {
