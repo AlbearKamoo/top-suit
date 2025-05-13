@@ -1,0 +1,10 @@
+// /tsconfig.json (at monorepo root)
+{
+  "files": [],
+  "references": [
+    { "path": "./client" },
+    { "path": "./client/tsconfig.node.json" },
+    { "path": "./server" },
+    { "path": "./shared" }
+  ]
+}

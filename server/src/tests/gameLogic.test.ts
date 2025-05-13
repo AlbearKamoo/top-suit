@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { Card, HandType, PlayedHand } from '@shared/types';
 import {
-  Card,
-  HandType,
-  PlayedHand,
   isRun,
   getHandType,
   compareCards,

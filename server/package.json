@@ -4,8 +4,9 @@
   "description": "Card game server",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
+    "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/server.ts",
+    "prebuild": "cd ../shared && npm run build",
+    "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "test": "vitest",
     "test:watch": "vitest watch"
@@ -15,6 +16,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@top-suit/shared": "file:../shared",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.1",
     "@types/node": "^22.15.17",
@@ -26,6 +28,8 @@
     "typescript": "^5.8.3"
   },
   "devDependencies": {
+    "tsc-alias": "^1.8.8",
+    "tsconfig-paths": "^4.2.0",
     "vitest": "^3.1.3"
   }
 }

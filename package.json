@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/AlbearKamoo/top-suit/issues"
   },
-  "homepage": "https://github.com/AlbearKamoo/top-suit#readme"
+  "homepage": "https://github.com/AlbearKamoo/top-suit#readme",
+  "devDependencies": {
+    "tsc-alias": "^1.8.16"
+  }
 }
