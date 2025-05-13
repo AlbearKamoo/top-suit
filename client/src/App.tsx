@@ -15,6 +15,7 @@ function App() {
   const [error, setError] = useState('');
   const [drawPileCount, setDrawPileCount] = useState(0);
   const [currentTrick, setCurrentTrick] = useState<PlayedHand[]>([]);
+  const [currentTurn, setCurrentTurn] = useState('');
 
   useEffect(() => {
     socket.on('gameCreated', ({ gameCode }: GameCreatedEvent) => {
@@ -25,11 +26,12 @@ function App() {
       setPlayers(players);
     });
 
-    socket.on('gameStarted', ({ players, drawPileCount }: GameStartedEvent) => {
+    socket.on('gameStarted', ({ players, drawPileCount, currentTurn }: GameStartedEvent) => {
       setPlayers(players);
       setGameStarted(true);
       setDrawPileCount(drawPileCount);
       setCurrentTrick([]);
+      setCurrentTurn(currentTurn);
     });
 
     socket.on('dealCards', ({ cards, drawPileCount }: CardsEvent) => {
@@ -47,6 +49,7 @@ function App() {
       setPlayers(gameState.players);
       setDrawPileCount(gameState.drawPileCount);
       setCurrentTrick(gameState.currentTrick);
+      setCurrentTurn(gameState.currentTurn);
     });
 
     socket.on('trickComplete', ({ players: updated }: TrickCompleteEvent) => {
@@ -114,6 +117,7 @@ function App() {
       cards={cards}
       drawPileCount={drawPileCount}
       currentTrick={currentTrick}
+      currentTurn={currentTurn}
       onPlayHand={(indices: number[]) => {
         const selectedCards = indices.map(i => cards[i]);
         socket.emit('playHand', { gameCode, cards: selectedCards });

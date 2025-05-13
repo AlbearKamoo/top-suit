@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { Card as CardType, Player, PlayedHand } from '../types';
 import { CardHand } from './CardHand';
+import { UserPlayerInfo } from './UserPlayerInfo';
 import { useState } from 'react';
 
 const Container = styled.div`
@@ -28,12 +29,15 @@ const GameTable = styled.div`
   align-items: center;
 `
 
-const PlayerPosition = styled.div<{ position: 'top' | 'left' | 'right' | 'bottom' }>`
+const PlayerPosition = styled.div<{ position: 'top' | 'left' | 'right' | 'bottom'; isActive?: boolean }>`
   position: absolute;
   padding: 10px;
   background-color: rgba(0, 0, 0, 0.7);
   border-radius: 10px;
   color: white;
+  box-shadow: ${({ isActive }) =>
+    isActive ? '0 0 12px 6px rgba(255, 215, 0, 0.9)' : 'none'};
+  transition: box-shadow 0.3s;
   
   ${({ position }) => {
     switch (position) {
@@ -51,6 +55,7 @@ const PlayerPosition = styled.div<{ position: 'top' | 'left' | 'right' | 'bottom
 
 const PlayerInfo = styled.div`
   text-align: center;
+  margin-right: 20px;
   h3 {
     margin: 0;
     font-size: 1.2rem;
@@ -62,13 +67,6 @@ const PlayerInfo = styled.div`
     font-size: 1rem;
     color: #ccc;
   }
-`
-
-const UserPlayerInfo = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-self: flex-end;
-  margin-bottom: 20px
 `
 
 const DrawPile = styled.div`
@@ -140,6 +138,7 @@ interface GameScreenProps {
   drawPileCount: number;
   onPlayHand: (indices: number[]) => void;
   currentTrick: PlayedHand[];
+  currentTurn: string;
 }
 
 const getPlayerPositions = (players: Player[], currentPlayerId: string) => {
@@ -168,8 +167,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   cards,
   drawPileCount,
   onPlayHand,
-  currentTrick
+  currentTrick,
+  currentTurn
 }) => {
+  const currentTurnPlayer = players.find(p => p.id === currentTurn);
   const otherPlayers = getPlayerPositions(players, currentPlayerId);
   const currentPlayer = players.find(p => p.id === currentPlayerId);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
@@ -204,7 +205,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   return (
     <Container>
-      <h1>Game Started!</h1>
+      <h1>{currentTurnPlayer ? `${currentTurnPlayer.name}'s turn` : 'Game Started!'}</h1>
       <GameTable>
         {/* Render played hands at each player's position */}
         {players.map(player => {
@@ -218,7 +219,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           );
         })}
         {otherPlayers.map(player => (
-          <PlayerPosition key={player.id} position={player.position}>
+          <PlayerPosition
+            key={player.id}
+            position={player.position}
+            isActive={player.id === currentTurn}
+          >
             <PlayerInfo>
               <h3>{player.name}</h3>
               <p>Cards: {player.cardCount}</p>
@@ -229,23 +234,16 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         <DrawPile>
           <DrawPileCount>{drawPileCount} cards</DrawPileCount>
         </DrawPile>
-        <UserPlayerInfo>
-          {currentPlayer && (
-            <PlayerInfo>
-              <h3>{currentPlayer.name} (You)</h3>
-              <p>Cards: {currentPlayer.cardCount}</p>
-              <p>Score: {currentPlayer.score}</p>
-            </PlayerInfo>
-          )}
-          <CardHand
+        {currentPlayer && (
+          <UserPlayerInfo
+            player={currentPlayer}
             cards={cards}
             selectedIndices={selectedIndices}
             onCardClick={toggleCardSelection}
+            isActive={currentPlayerId === currentTurn}
+            onConfirm={confirmPlay}
           />
-        </UserPlayerInfo>
-        <button onClick={confirmPlay} disabled={selectedIndices.size === 0}>
-          Play Selected Hand
-        </button>
+        )}
       </GameTable>
     </Container>
   );

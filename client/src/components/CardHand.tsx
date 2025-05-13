@@ -6,7 +6,6 @@ const HandContainer = styled.div<{ cards: number}>`
   width : ${props => props.cards * 30 + 40}px;
   position: relative;
   height: 120px;
-  margin-top: 1rem;
   padding: 0 30px;
 `
 

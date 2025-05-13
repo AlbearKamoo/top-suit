@@ -103,7 +103,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
       </div>
       )}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {gameCode && (
+      {gameCode && players.length >= 1 && (
         <div>
           <h2>Game Code:</h2>
           <GameCode>{gameCode}</GameCode>

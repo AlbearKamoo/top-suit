@@ -88,7 +88,7 @@ export function handleJoinGame(io: Server, socket: Socket, data: { gameCode: str
     socket.emit('rejoinSuccess', {
       playerId: socket.id,
       gameState: {
-        currentTurn: game.currentTurn,
+        currentTurn: game.players[game.currentTurn].id,
         currentTrick: game.currentTrick,
         lastValidHand: game.lastValidHand,
         drawPileCount: game.drawPile.length,
@@ -162,7 +162,7 @@ export function handleStartGame(io: Server, socket: Socket, gameCode: string) {
     
     io.to(gameCode).emit('gameStarted', {
       players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length })),
-      currentTurn: game.currentTurn,
+      currentTurn: game.players[game.currentTurn].id,
       drawPileCount: game.drawPile.length
     });
 
@@ -262,7 +262,7 @@ export function handlePlayHand(io: Server, socket: Socket, data: { gameCode: str
     console.log("GAME STATE", JSON.stringify(game))
     // Emit updated game state
     io.to(gameCode).emit('gameState', { gameState: {
-      currentTurn: game.currentTurn,
+      currentTurn: game.players[game.currentTurn].id,
       currentTrick: game.currentTrick,
       lastValidHand: game.lastValidHand,
       drawPileCount: game.drawPile.length,
@@ -335,7 +335,7 @@ export function handlePass(io: Server, socket: Socket, gameCode: string) {
 
   // Emit updated game state
   io.to(gameCode).emit('gameState', {
-    currentTurn: game.currentTurn,
+    currentTurn: game.players[game.currentTurn].id,
     currentTrick: game.currentTrick,
     lastValidHand: game.lastValidHand,
     drawPileCount: game.drawPile.length,

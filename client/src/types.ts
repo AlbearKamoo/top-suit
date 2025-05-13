@@ -39,6 +39,7 @@ export interface PlayersEvent {
 export interface GameStartedEvent {
   drawPileCount: number;
   players: Player[];
+  currentTurn: string;
 }
 
 export interface GameStateEvent {
