@@ -3,6 +3,7 @@ import { Card as CardType, Player, PlayedHand } from '../types';
 import { CardHand } from './CardHand';
 import { UserPlayerInfo } from './UserPlayerInfo';
 import { useState } from 'react';
+import { SuitHierarchyDiagram } from './SuitHierarchyDiagram';
 
 const Container = styled.div`
   width: 100vw;
@@ -288,6 +289,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           </>
         )}
       </GameTable>
+      <SuitHierarchyDiagram />
     </Container>
   );
 }; 
