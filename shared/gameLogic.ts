@@ -112,6 +112,24 @@ const SUIT_HIERARCHY: Record<string, string[]> = {
     return compareHands(newHand, previousHand) > 0;
   }
   
+  // Determine if a run can be validly extended by up to 2 cards
+  export function canExtendRun(newCards: Card[], prevCards: Card[]): boolean {
+    const extra = newCards.length - prevCards.length;
+    if (extra < 1 || extra > 2) return false;
+    // Sort by rank
+    const sortedPrev = [...prevCards].sort((a, b) => RANK_VALUES[a.rank] - RANK_VALUES[b.rank]);
+    const sortedNew = [...newCards].sort((a, b) => RANK_VALUES[a.rank] - RANK_VALUES[b.rank]);
+    const suit = sortedPrev[0].suit;
+    if (!sortedNew.every(c => c.suit === suit)) return false;
+  
+    // Extras must be sequentially higher
+    const baseValue = RANK_VALUES[sortedPrev[sortedPrev.length - 1].rank];
+    for (let j = sortedPrev.length; j < sortedNew.length; j++) {
+      if (RANK_VALUES[sortedNew[j].rank] !== baseValue + (j - sortedPrev.length + 1)) return false;
+    }
+    return true;
+  }
+  
   // Validate a hand
   export function validateHand(
     cards: Card[],
@@ -129,6 +147,14 @@ const SUIT_HIERARCHY: Record<string, string[]> = {
   
     if (type !== previousHand.type) {
       return { valid: false, type, error: `Must play a ${previousHand.type}` };
+    }
+  
+    // Special run extension rule
+    if (type === 'run' && previousHand.type === 'run') {
+      if (!canExtendRun(cards, previousHand.cards)) {
+        return { valid: false, type, error: 'Invalid run extension' };
+      }
+      return { valid: true, type };
     }
   
     const newHand: PlayedHand = { type, cards, playerId: "" };

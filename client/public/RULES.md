@@ -88,9 +88,9 @@ If the current trick is a run, next player may:
 
 **Example**:
 
-* Player A: 4♣️ 5♠️ 6♦️ \
+* Player A: 4♣️ 5♣️ 6♣️
 
-* Player B: can either play a stronger run or extend with 7♥️ or 7♥️8♦️
+* Player B: can either play a stronger run or extend with 7♣️ or 7♣️8♣️
 
 
 ---

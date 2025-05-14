@@ -6,6 +6,7 @@ import {
   compareCards,
   compareHands,
   validateHand,
+  canExtendRun,
 } from '../gameLogic'
 
 describe('Game Logic', () => {
@@ -198,6 +199,117 @@ describe('Game Logic', () => {
         playerId: 'player2'
       };
       expect(compareHands(single, pair)).toBe(0);
+    });
+  });
+
+  // Test canExtendRun function
+  describe('canExtendRun', () => {
+    it('should return true for valid extension by 1 card', () => {
+      const prevCards: Card[] = [
+        { suit: '♠', rank: '5' },
+        { suit: '♠', rank: '6' },
+        { suit: '♠', rank: '7' }
+      ];
+      const newCards: Card[] = [
+        { suit: '♠', rank: '5' },
+        { suit: '♠', rank: '6' },
+        { suit: '♠', rank: '7' },
+        { suit: '♠', rank: '8' }
+      ];
+      expect(canExtendRun(newCards, prevCards)).toBe(true);
+    });
+
+    it('should return true for valid extension by 2 cards', () => {
+      const prevCards: Card[] = [
+        { suit: '♥', rank: '10' },
+        { suit: '♥', rank: 'J' },
+        { suit: '♥', rank: 'Q' }
+      ];
+      const newCards: Card[] = [
+        { suit: '♥', rank: '10' },
+        { suit: '♥', rank: 'J' },
+        { suit: '♥', rank: 'Q' },
+        { suit: '♥', rank: 'K' },
+        { suit: '♥', rank: 'A' }
+      ];
+      expect(canExtendRun(newCards, prevCards)).toBe(true);
+    });
+
+    it('should return false when extra cards are not sequential next ranks', () => {
+      const prevCards: Card[] = [
+        { suit: '♦', rank: '2' },
+        { suit: '♦', rank: '3' },
+        { suit: '♦', rank: '4' }
+      ];
+      const newCards: Card[] = [
+        { suit: '♦', rank: '2' },
+        { suit: '♦', rank: '3' },
+        { suit: '♦', rank: '4' },
+        { suit: '♦', rank: '6' }
+      ];
+      expect(canExtendRun(newCards, prevCards)).toBe(false);
+    });
+
+    it('should return false when extra cards exceed limit', () => {
+      const prevCards: Card[] = [
+        { suit: '♣', rank: '7' },
+        { suit: '♣', rank: '8' },
+        { suit: '♣', rank: '9' }
+      ];
+      const newCards: Card[] = [
+        { suit: '♣', rank: '7' },
+        { suit: '♣', rank: '8' },
+        { suit: '♣', rank: '9' },
+        { suit: '♣', rank: '10' },
+        { suit: '♣', rank: 'J' },
+        { suit: '♣', rank: 'Q' }
+      ];
+      expect(canExtendRun(newCards, prevCards)).toBe(false);
+    });
+
+    it('should return false for suit mismatch', () => {
+      const prevCards: Card[] = [
+        { suit: '♠', rank: '5' },
+        { suit: '♠', rank: '6' },
+        { suit: '♠', rank: '7' }
+      ];
+      const newCards: Card[] = [
+        { suit: '♠', rank: '5' },
+        { suit: '♠', rank: '6' },
+        { suit: '♠', rank: '7' },
+        { suit: '♥', rank: '8' }
+      ];
+      expect(canExtendRun(newCards, prevCards)).toBe(false);
+    });
+
+    it('should return false for too few extra cards', () => {
+      const prevCards: Card[] = [
+        { suit: '♥', rank: '9' },
+        { suit: '♥', rank: '10' },
+        { suit: '♥', rank: 'J' }
+      ];
+      const newCards: Card[] = [
+        { suit: '♥', rank: '9' },
+        { suit: '♥', rank: '10' },
+        { suit: '♥', rank: 'J' }
+      ];
+      expect(canExtendRun(newCards, prevCards)).toBe(false);
+    });
+
+    it('should handle unsorted input correctly', () => {
+      const prevCards: Card[] = [
+        { suit: '♦', rank: '4' },
+        { suit: '♦', rank: '2' },
+        { suit: '♦', rank: '3' }
+      ];
+      const newCards: Card[] = [
+        { suit: '♦', rank: '6' },
+        { suit: '♦', rank: '2' },
+        { suit: '♦', rank: '3' },
+        { suit: '♦', rank: '4' },
+        { suit: '♦', rank: '5' }
+      ];
+      expect(canExtendRun(newCards, prevCards)).toBe(true);
     });
   });
 
