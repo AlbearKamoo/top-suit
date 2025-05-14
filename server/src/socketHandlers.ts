@@ -215,6 +215,15 @@ export function handlePlayHand(io: Server, socket: Socket, data: { gameCode: str
     }
   });
 
+  // If this was the player's last card, end the game immediately
+  if (player.cards.length === 0) {
+    game.status = 'finished';
+    io.to(gameCode).emit('gameOver', {
+      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length }))
+    });
+    return;
+  }
+
   // Add the hand to the current trick
   const playedHand: PlayedHand = {
     type: validation.type,

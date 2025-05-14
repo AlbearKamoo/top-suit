@@ -82,7 +82,6 @@ export const CardHand: React.FC<CardHandProps> = ({ cards, selectedIndices = new
           index={index}
           canPlay={canPlay}
           className={`${isRedSuit(card.suit) ? 'red' : ''}${selectedIndices.has(index) ? ' selected' : ''}`}
-          style={{ zIndex: selectedIndices.has(index) ? cards.length + index : index }}
           onClick={() => canPlay && onCardClick && onCardClick(index)}
         >
           <CardContent>

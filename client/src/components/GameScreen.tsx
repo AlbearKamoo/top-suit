@@ -140,6 +140,7 @@ interface GameScreenProps {
   onPass: () => void;
   onSortBySuit: () => void;
   onSortByRank: () => void;
+  winnerName?: string | null;
   currentTrick: PlayedHand[];
   currentTurn: string;
 }
@@ -173,6 +174,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   onPass,
   onSortBySuit,
   onSortByRank,
+  winnerName,
   currentTrick,
   currentTurn
 }) => {
@@ -215,48 +217,53 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   return (
     <Container>
-      <h1>{currentTurnPlayer ? `${currentTurnPlayer.name}'s turn` : 'Game Started!'}</h1>
+      {winnerName ? <h1></h1> :
+        <h1>{currentTurnPlayer ? `${currentTurnPlayer.name}'s turn` : 'Game Started!'}</h1>
+      }
       <GameTable>
-        {/* Render played hands at each player's position */}
-        {players.map(player => {
-          const hand = playedHandMap[player.id];
-          if (!hand) return null;
-          const pos = positionMap[player.id];
-          return (
-            <PlayedHandPosition key={player.id} position={pos}>
-              <CardHand cards={hand.cards} />
-            </PlayedHandPosition>
-          );
-        })}
-        {otherPlayers.map(player => (
-          <PlayerPosition
-            key={player.id}
-            position={player.position}
-            isActive={player.id === currentTurn}
-          >
-            <PlayerInfo>
-              <h3>{player.name}</h3>
-              <p>Cards: {player.cardCount}</p>
-              <p>Score: {player.score}</p>
-            </PlayerInfo>
-          </PlayerPosition>
-        ))}
-        <DrawPile>
-          <DrawPileCount>{drawPileCount} cards</DrawPileCount>
-        </DrawPile>
-        {currentPlayer && (
-          <UserPlayerInfo
-            player={currentPlayer}
-            cards={cards}
-            selectedIndices={selectedIndices}
-            onCardClick={toggleCardSelection}
-            isActive={currentPlayerId === currentTurn}
-            onConfirm={confirmPlay}
-            onPass={onPass}
-            onSortBySuit={onSortBySuit}
-            onSortByRank={onSortByRank}
-            previousHand={previousHand}
-          />
+        {winnerName ? (<h1>{winnerName} wins!</h1>) : (
+          <>
+            {players.map(player => {
+              const hand = playedHandMap[player.id];
+              if (!hand) return null;
+              const pos = positionMap[player.id];
+              return (
+                <PlayedHandPosition key={player.id} position={pos}>
+                  <CardHand cards={hand.cards} />
+                </PlayedHandPosition>
+              );
+            })}
+            {otherPlayers.map(player => (
+              <PlayerPosition
+                key={player.id}
+                position={player.position}
+                isActive={player.id === currentTurn}
+              >
+                <PlayerInfo>
+                  <h3>{player.name}</h3>
+                  <p>Cards: {player.cardCount}</p>
+                  <p>Score: {player.score}</p>
+                </PlayerInfo>
+              </PlayerPosition>
+            ))}
+            <DrawPile>
+              <DrawPileCount>{drawPileCount} cards</DrawPileCount>
+            </DrawPile>
+            {currentPlayer && (
+              <UserPlayerInfo
+                player={currentPlayer}
+                cards={cards}
+                selectedIndices={selectedIndices}
+                onCardClick={toggleCardSelection}
+                isActive={currentPlayerId === currentTurn}
+                onConfirm={confirmPlay}
+                onPass={onPass}
+                onSortBySuit={onSortBySuit}
+                onSortByRank={onSortByRank}
+                previousHand={previousHand}
+              />
+            )}
+          </>
         )}
       </GameTable>
     </Container>

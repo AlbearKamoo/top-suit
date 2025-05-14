@@ -6,7 +6,7 @@ import { Card, CardsEvent, GameCreatedEvent, GameStartedEvent, Player, PlayersEv
 
 export const socket = io('http://localhost:3001');
 
-function App() {
+export function App() {
   const [playerName, setPlayerName] = useState('');
   const [gameCode, setGameCode] = useState('');
   const [players, setPlayers] = useState<Player[]>([]);
@@ -16,6 +16,7 @@ function App() {
   const [drawPileCount, setDrawPileCount] = useState(0);
   const [currentTrick, setCurrentTrick] = useState<PlayedHand[]>([]);
   const [currentTurn, setCurrentTurn] = useState('');
+  const [winnerName, setWinnerName] = useState<string | null>(null);
 
   useEffect(() => {
     socket.on('gameCreated', ({ gameCode }: GameCreatedEvent) => {
@@ -27,11 +28,17 @@ function App() {
     });
 
     socket.on('gameStarted', ({ players, drawPileCount, currentTurn }: GameStartedEvent) => {
+      setWinnerName(null);
       setPlayers(players);
       setGameStarted(true);
       setDrawPileCount(drawPileCount);
       setCurrentTrick([]);
       setCurrentTurn(currentTurn);
+    });
+
+    socket.on('gameOver', ({ players }: { players: Player[] }) => {
+      const winner = players.find((p: Player) => p.cardCount === 0);
+      setWinnerName(winner ? winner.name : null);
     });
 
     socket.on('dealCards', ({ cards, drawPileCount }: CardsEvent) => {
@@ -64,6 +71,7 @@ function App() {
       socket.off('gameCreated');
       socket.off('playerJoined');
       socket.off('gameStarted');
+      socket.off('gameOver');
       socket.off('dealCards');
       socket.off('cardDrawn');
       socket.off('gameState');
@@ -112,6 +120,7 @@ function App() {
 
   return (
     <GameScreen
+      winnerName={"Blah"}
       players={players}
       currentPlayerId={socket.id || ''}
       cards={cards}
