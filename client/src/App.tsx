@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { GameScreen } from './components/GameScreen';
 import { LobbyScreen } from './components/LobbyScreen';
-import { Card, CardsEvent, GameCreatedEvent, GameStartedEvent, Player, PlayersEvent, GameStateEvent, CardDrawnEvent, TrickCompleteEvent, PlayedHand } from './types';
+import { Card, CardsEvent, GameCreatedEvent, GameStartedEvent, Player, PlayersEvent, GameStateEvent, CardDrawnEvent, TrickCompleteEvent, PlayedHand, SUIT_HIERARCHY, RANK_VALUES } from './types';
 
 export const socket = io('http://localhost:3001');
 
@@ -127,6 +127,16 @@ function App() {
       onPass={() => {
         socket.emit('pass', gameCode);
         setError('');
+      }}
+      onSortBySuit={() => {
+        setCards(prev => [...prev].sort((a, b) => {
+          const suitDiff = SUIT_HIERARCHY[a.suit] - SUIT_HIERARCHY[b.suit];
+          if (suitDiff !== 0) return suitDiff;
+          return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
+        }));
+      }}
+      onSortByRank={() => {
+        setCards(prev => [...prev].sort((a, b) => RANK_VALUES[a.rank] - RANK_VALUES[b.rank]));
       }}
     />
   );

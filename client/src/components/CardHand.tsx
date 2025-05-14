@@ -27,7 +27,6 @@ const Card = styled.div<{ index: number, canPlay?: boolean }>`
 
   &:hover {
     transform: translateY(-20px);
-    z-index: 100;
   }
 
   &.red {
@@ -38,7 +37,6 @@ const Card = styled.div<{ index: number, canPlay?: boolean }>`
     transform: translateY(-30px) !important;
     border-color: gold !important;
     box-shadow: 0 0 10px gold !important;
-    z-index: 1000;
   }
 
   ${props => !props.canPlay && `

@@ -138,6 +138,8 @@ interface GameScreenProps {
   drawPileCount: number;
   onPlayHand: (indices: number[]) => void;
   onPass: () => void;
+  onSortBySuit: () => void;
+  onSortByRank: () => void;
   currentTrick: PlayedHand[];
   currentTurn: string;
 }
@@ -148,12 +150,12 @@ const getPlayerPositions = (players: Player[], currentPlayerId: string) => {
   const otherPlayers = [...players.slice(playerIndex + 1), ...players.slice(0, playerIndex)];
 
   if (players.length === 3) {
-    positions.push('top');
     positions.push('left');
+    positions.push('top');
   } else if (players.length === 4) {
+    positions.push('left');
     positions.push('top');
     positions.push('right');
-    positions.push('left');
   }
 
   return otherPlayers.map((player, index) => ({
@@ -169,6 +171,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   drawPileCount,
   onPlayHand,
   onPass,
+  onSortBySuit,
+  onSortByRank,
   currentTrick,
   currentTurn
 }) => {
@@ -249,6 +253,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             isActive={currentPlayerId === currentTurn}
             onConfirm={confirmPlay}
             onPass={onPass}
+            onSortBySuit={onSortBySuit}
+            onSortByRank={onSortByRank}
             previousHand={previousHand}
           />
         )}

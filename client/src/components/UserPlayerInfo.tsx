@@ -63,6 +63,24 @@ const ButtonContainer = styled.div`
   justify-content: center;
 `;
 
+const SortContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+`;
+
+const SortButton = styled.button`
+  padding: 4px 8px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
 interface UserPlayerInfoProps {
   player: Player;
   cards: CardType[];
@@ -71,6 +89,8 @@ interface UserPlayerInfoProps {
   isActive?: boolean;
   onConfirm: () => void;
   onPass: () => void;
+  onSortBySuit: () => void;
+  onSortByRank: () => void;
   previousHand: PlayedHand | null;
 }
 
@@ -82,6 +102,8 @@ export const UserPlayerInfo: React.FC<UserPlayerInfoProps> = ({
   isActive = false,
   onConfirm,
   onPass,
+  onSortBySuit,
+  onSortByRank,
   previousHand,
 }) => {
   // Build the selected cards array
@@ -98,6 +120,12 @@ export const UserPlayerInfo: React.FC<UserPlayerInfoProps> = ({
           <h3>{player.name} (You)</h3>
           <p>Cards: {player.cardCount}</p>
           <p>Score: {player.score}</p>
+          {isActive && (
+            <SortContainer>
+              <SortButton onClick={onSortBySuit}>-&gt;♥</SortButton>
+              <SortButton onClick={onSortByRank}>-&gt;9</SortButton>
+            </SortContainer>
+          )}
         </Info>
         <CardHand
           cards={cards}
