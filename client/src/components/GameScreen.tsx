@@ -131,6 +131,19 @@ const PlayedHandPosition = styled.div<{ position: 'top' | 'left' | 'right' | 'bo
   }}
 `;
 
+// add restart button style
+const RestartButton = styled.button`
+  margin-top: 8px;
+  padding: 6px 12px;
+  font-size: 1rem;
+  border: none;
+  background-color: #ff9800;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  &:hover { background-color: #fb8c00; }
+`;
+
 interface GameScreenProps {
   players: Player[];
   currentPlayerId: string;
@@ -141,6 +154,7 @@ interface GameScreenProps {
   onSortBySuit: () => void;
   onSortByRank: () => void;
   winnerName?: string | null;
+  onRestartGame?: () => void;
   currentTrick: PlayedHand[];
   currentTurn: string;
 }
@@ -175,6 +189,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   onSortBySuit,
   onSortByRank,
   winnerName,
+  onRestartGame,
   currentTrick,
   currentTurn
 }) => {
@@ -217,11 +232,18 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   return (
     <Container>
-      {winnerName ? <h1></h1> :
-        <h1>{currentTurnPlayer ? `${currentTurnPlayer.name}'s turn` : 'Game Started!'}</h1>
-      }
+      <h1>
+        {winnerName
+          ? `${winnerName} wins!`
+          : currentTurnPlayer
+            ? `${currentTurnPlayer.name}'s turn`
+            : 'Game Started!'}
+      </h1>
+      {winnerName && onRestartGame && (
+        <RestartButton onClick={onRestartGame}>New Game</RestartButton>
+      )}
       <GameTable>
-        {winnerName ? (<h1>{winnerName} wins!</h1>) : (
+        {!winnerName && (
           <>
             {players.map(player => {
               const hand = playedHandMap[player.id];

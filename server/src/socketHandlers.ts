@@ -140,6 +140,8 @@ export function handleStartGame(io: Server, socket: Socket, gameCode: string) {
 
   // Start the game if we have 3 or 4 players
   if (game.players.length >= 3) {
+    // Recreate deck for a fresh game
+    game.deck = createDeck();
     game.status = 'playing';
     game.currentTrick = [];
     game.lastValidHand = null;

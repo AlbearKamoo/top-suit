@@ -120,7 +120,12 @@ export function App() {
 
   return (
     <GameScreen
-      winnerName={"Blah"}
+      onRestartGame={() => {
+        setWinnerName(null);
+        socket.emit('startGame', gameCode);
+        setError('');
+      }}
+      winnerName={winnerName}
       players={players}
       currentPlayerId={socket.id || ''}
       cards={cards}
