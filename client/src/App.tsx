@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { GameScreen } from './components/GameScreen';
 import { LobbyScreen } from './components/LobbyScreen';
 import { Card, CardsEvent, GameCreatedEvent, GameStartedEvent, Player, PlayersEvent, GameStateEvent, CardDrawnEvent, TrickCompleteEvent, PlayedHand, SUIT_HIERARCHY, RANK_VALUES } from './types';
+import { RulesToggle } from './components/RulesToggle';
 
 export const socket = io('http://localhost:3001');
 
@@ -106,56 +107,62 @@ export function App() {
 
   if (!gameStarted) {
     return (
-      <LobbyScreen
-        playerName={playerName}
-        gameCode={gameCode}
-        players={players}
-        error={error}
-        isCreator={isCreator}
-        onPlayerNameChange={setPlayerName}
-        onGameCodeChange={setGameCode}
-        onCreateGame={handleCreateGame}
-        onJoinGame={handleJoinGame}
-        onStartGame={handleStartGame}
-      />
+      <div>
+        <RulesToggle />
+        <LobbyScreen
+          playerName={playerName}
+          gameCode={gameCode}
+          players={players}
+          error={error}
+          isCreator={isCreator}
+          onPlayerNameChange={setPlayerName}
+          onGameCodeChange={setGameCode}
+          onCreateGame={handleCreateGame}
+          onJoinGame={handleJoinGame}
+          onStartGame={handleStartGame}
+        />
+      </div>
     );
   }
 
   return (
-    <GameScreen
-      onRestartGame={() => {
-        setWinnerName(null);
-        socket.emit('startGame', gameCode);
-        setError('');
-      }}
-      winnerName={winnerName}
-      players={players}
-      currentPlayerId={socket.id || ''}
-      cards={cards}
-      drawPileCount={drawPileCount}
-      currentTrick={currentTrick}
-      currentTurn={currentTurn}
-      onPlayHand={(indices: number[]) => {
-        const selectedCards = indices.map(i => cards[i]);
-        socket.emit('playHand', { gameCode, cards: selectedCards });
-        setCards(prev => prev.filter((_, idx) => !indices.includes(idx)));
-        setError('');
-      }}
-      onPass={() => {
-        socket.emit('pass', gameCode);
-        setError('');
-      }}
-      onSortBySuit={() => {
-        setCards(prev => [...prev].sort((a, b) => {
-          const suitDiff = SUIT_HIERARCHY[a.suit] - SUIT_HIERARCHY[b.suit];
-          if (suitDiff !== 0) return suitDiff;
-          return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
-        }));
-      }}
-      onSortByRank={() => {
-        setCards(prev => [...prev].sort((a, b) => RANK_VALUES[a.rank] - RANK_VALUES[b.rank]));
-      }}
-    />
+    <div>
+      <RulesToggle />
+      <GameScreen
+        onRestartGame={() => {
+          setWinnerName(null);
+          socket.emit('startGame', gameCode);
+          setError('');
+        }}
+        winnerName={winnerName}
+        players={players}
+        currentPlayerId={socket.id || ''}
+        cards={cards}
+        drawPileCount={drawPileCount}
+        currentTrick={currentTrick}
+        currentTurn={currentTurn}
+        onPlayHand={(indices: number[]) => {
+          const selectedCards = indices.map(i => cards[i]);
+          socket.emit('playHand', { gameCode, cards: selectedCards });
+          setCards(prev => prev.filter((_, idx) => !indices.includes(idx)));
+          setError('');
+        }}
+        onPass={() => {
+          socket.emit('pass', gameCode);
+          setError('');
+        }}
+        onSortBySuit={() => {
+          setCards(prev => [...prev].sort((a, b) => {
+            const suitDiff = SUIT_HIERARCHY[a.suit] - SUIT_HIERARCHY[b.suit];
+            if (suitDiff !== 0) return suitDiff;
+            return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
+          }));
+        }}
+        onSortByRank={() => {
+          setCards(prev => [...prev].sort((a, b) => RANK_VALUES[a.rank] - RANK_VALUES[b.rank]));
+        }}
+      />
+    </div>
   );
 }
 
