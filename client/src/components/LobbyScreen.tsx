@@ -43,8 +43,8 @@ const Input = styled.input`
 `
 
 const GameCode = styled.div`
-  font-size: 24px;
-  margin: 20px 0;
+  font-size: 28px;
+  margin: 4px 0;
   padding: 10px;
   background-color: #f0f0f0;
   border-radius: 4px;
@@ -56,6 +56,7 @@ interface LobbyScreenProps {
   gameCode: string;
   players: Player[];
   error: string;
+  isCreator: boolean;
   onPlayerNameChange: (name: string) => void;
   onGameCodeChange: (code: string) => void;
   onCreateGame: () => void;
@@ -68,6 +69,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   gameCode,
   players,
   error,
+  isCreator,
   onPlayerNameChange,
   onGameCodeChange,
   onCreateGame,
@@ -87,34 +89,44 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
       </div>
       <div>
         <Button onClick={onCreateGame}>Create New Game</Button>
+        {isCreator && <p>Game created!</p>}
       </div>
-      <div>
-        <Input
-          type="text"
-          placeholder="Enter game code"
-          value={gameCode}
-          onChange={(e) => onGameCodeChange(e.target.value.toUpperCase())}
-        />
-        <Button onClick={onJoinGame}>Join Game</Button>
-      </div>
-      {players.length >= 3 && (<div>
-        <Button onClick={onStartGame}>Start Game</Button>
-      </div>
-      )}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {gameCode && players.length >= 1 && (
+      {!isCreator && (
         <div>
-          <h2>Game Code:</h2>
-          <GameCode>{gameCode}</GameCode>
-          <h3>Players:</h3>
-          <ul>
-            {players.map(player => (
-              <li key={player.id}>{player.name}</li>
-            ))}
-          </ul>
-          <p>Waiting for players... (3-4 players needed)</p>
+          <Input
+            type="text"
+            placeholder="Enter game code"
+            value={gameCode}
+            onChange={(e) => onGameCodeChange(e.target.value.toUpperCase())}
+          />
+          <Button onClick={onJoinGame}>Join Game</Button>
         </div>
       )}
+      {players.length >= 3 && isCreator && (
+        <div>
+          <Button onClick={onStartGame}>Start Game</Button>
+        </div>
+      )}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div>
+        {gameCode && (
+          <>
+            <h2 style={{ margin: '4px' }}>Game Code:</h2>
+            <GameCode>{gameCode}</GameCode>
+          </>
+        )}
+        {players.length >= 1 && (
+          <>
+            <h3>Players:</h3>
+            <ul>
+              {players.map(player => (
+                <li key={player.id}>{player.name}</li>
+              ))}
+            </ul>
+            <p>Waiting for players... (3-4 players needed)</p>
+          </>
+        )}
+      </div>
     </Container>
   );
 }; 

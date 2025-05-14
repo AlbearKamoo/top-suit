@@ -17,10 +17,12 @@ export function App() {
   const [currentTrick, setCurrentTrick] = useState<PlayedHand[]>([]);
   const [currentTurn, setCurrentTurn] = useState('');
   const [winnerName, setWinnerName] = useState<string | null>(null);
+  const [isCreator, setIsCreator] = useState(false);
 
   useEffect(() => {
     socket.on('gameCreated', ({ gameCode }: GameCreatedEvent) => {
       setGameCode(gameCode);
+      setIsCreator(true);
     });
 
     socket.on('playerJoined', ({ players }: PlayersEvent) => {
@@ -109,6 +111,7 @@ export function App() {
         gameCode={gameCode}
         players={players}
         error={error}
+        isCreator={isCreator}
         onPlayerNameChange={setPlayerName}
         onGameCodeChange={setGameCode}
         onCreateGame={handleCreateGame}
