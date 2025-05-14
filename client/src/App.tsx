@@ -124,6 +124,10 @@ function App() {
         setCards(prev => prev.filter((_, idx) => !indices.includes(idx)));
         setError('');
       }}
+      onPass={() => {
+        socket.emit('pass', gameCode);
+        setError('');
+      }}
     />
   );
 }

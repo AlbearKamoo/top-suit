@@ -137,6 +137,7 @@ interface GameScreenProps {
   cards: CardType[];
   drawPileCount: number;
   onPlayHand: (indices: number[]) => void;
+  onPass: () => void;
   currentTrick: PlayedHand[];
   currentTurn: string;
 }
@@ -167,6 +168,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   cards,
   drawPileCount,
   onPlayHand,
+  onPass,
   currentTrick,
   currentTurn
 }) => {
@@ -200,6 +202,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       setSelectedIndices(new Set());
     }
   };
+
+  // Determine the previous valid hand (last non-none play) for validation
+  const validHands = currentTrick.filter(hand => hand.type !== 'none');
+  const previousHand = validHands.length > 0 ? validHands[validHands.length - 1] : null;
 
   console.log(playedHandMap)
 
@@ -242,6 +248,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             onCardClick={toggleCardSelection}
             isActive={currentPlayerId === currentTurn}
             onConfirm={confirmPlay}
+            onPass={onPass}
+            previousHand={previousHand}
           />
         )}
       </GameTable>

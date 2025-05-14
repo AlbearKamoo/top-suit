@@ -337,12 +337,14 @@ export function handlePass(io: Server, socket: Socket, gameCode: string) {
 
   // Emit updated game state
   io.to(gameCode).emit('gameState', {
-    currentTurn: game.players[game.currentTurn].id,
-    currentTrick: game.currentTrick,
-    lastValidHand: game.lastValidHand,
-    drawPileCount: game.drawPile.length,
-    players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length })),
-    status: game.status
+    gameState: {
+      currentTurn: game.players[game.currentTurn].id,
+      currentTrick: game.currentTrick,
+      lastValidHand: game.lastValidHand,
+      drawPileCount: game.drawPile.length,
+      players: game.players.map(p => ({ id: p.id, name: p.name, score: p.score, cardCount: p.cards.length })),
+      status: game.status
+    }
   });
 }
 

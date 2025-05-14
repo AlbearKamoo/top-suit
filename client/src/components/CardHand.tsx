@@ -6,10 +6,10 @@ const HandContainer = styled.div<{ cards: number}>`
   width : ${props => props.cards * 30 + 40}px;
   position: relative;
   height: 120px;
-  padding: 0 30px;
+  padding: 0 10px;
 `
 
-const Card = styled.div<{ index: number }>`
+const Card = styled.div<{ index: number, canPlay?: boolean }>`
   position: absolute;
   left: ${props => props.index * 30}px;
   width: 70px;
@@ -40,6 +40,10 @@ const Card = styled.div<{ index: number }>`
     box-shadow: 0 0 10px gold !important;
     z-index: 1000;
   }
+
+  ${props => !props.canPlay && `
+    pointer-events: none;
+  `}
 `
 
 const CardContent = styled.div`
@@ -64,22 +68,24 @@ interface CardHandProps {
   cards: CardType[];
   selectedIndices?: Set<number>;
   onCardClick?: (index: number) => void;
+  canPlay?: boolean;
 }
 
 const isRedSuit = (suit: CardType['suit']) => {
   return suit === '♥' || suit === '♦';
 };
 
-export const CardHand: React.FC<CardHandProps> = ({ cards, selectedIndices = new Set(), onCardClick }) => {
+export const CardHand: React.FC<CardHandProps> = ({ cards, selectedIndices = new Set(), onCardClick, canPlay = true }) => {
   return (
     <HandContainer cards={cards.length}>
       {cards.map((card, index) => (
         <Card
           key={index}
           index={index}
+          canPlay={canPlay}
           className={`${isRedSuit(card.suit) ? 'red' : ''}${selectedIndices.has(index) ? ' selected' : ''}`}
           style={{ zIndex: selectedIndices.has(index) ? cards.length + index : index }}
-          onClick={() => onCardClick && onCardClick(index)}
+          onClick={() => canPlay && onCardClick && onCardClick(index)}
         >
           <CardContent>
             <Suit>{card.suit}</Suit>
