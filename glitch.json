@@ -1,0 +1,21 @@
+{
+  "install": "cd shared && npm install && npm run build && cd ../server && npm install",
+  "start": "cd server && npm run build && npm start",
+  "watch": {
+    "install": {
+      "include": [
+        "^package\\.json$",
+        "^shared/package\\.json$",
+        "^server/package\\.json$",
+        "^.env$"
+      ]
+    },
+    "restart": {
+      "include": [
+        "^shared/",
+        "^server/"
+      ]
+    },
+    "throttle": 1000
+  }
+} 

@@ -5,12 +5,18 @@ import { Server } from 'socket.io';
 import { handleCreateGame, handleJoinGame, handleStartGame, handleDisconnect, handlePlayHand, handlePass } from './socketHandlers';
 
 const app = express();
-app.use(cors());
+const allowedOrigins = ['http://localhost:5173', 'https://top-suit.vercel.app'];
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
