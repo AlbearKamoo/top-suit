@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Card game server",
   "main": "dist/server.js",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/server.ts",
     "prebuild": "cd ../shared && npm run build",
