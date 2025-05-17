@@ -11,6 +11,16 @@ app.use(cors({
   methods: ['GET', 'POST'],
   credentials: true
 }));
+
+// Debug: log allowed origins
+console.log('Allowed origins set for CORS:', allowedOrigins);
+
+// Healthcheck endpoint
+app.get('/health', (req, res) => {
+  console.log('Healthcheck endpoint hit');
+  res.status(200).json({ status: 'ok' });
+});
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
@@ -21,7 +31,7 @@ const io = new Server(httpServer, {
 });
 
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  console.log('User connected via WebSocket:', socket.id);
 
   socket.on('createGame', (playerName: string) => handleCreateGame(io, socket, playerName));
   socket.on('joinGame', (data) => handleJoinGame(io, socket, data));
@@ -32,6 +42,7 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3001;
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const HOST = '0.0.0.0';
+httpServer.listen({ port: PORT, host: HOST }, () => {
+  console.log(`Server running on http://${HOST}:${PORT}`);
 }); 

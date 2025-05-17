@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/AlbearKamoo/top-suit#readme",
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.10",
     "tsc-alias": "^1.8.16"
   }
 }

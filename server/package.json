@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/server.ts",
     "prebuild": "cd ../shared && npm run build",
-    "build": "tsc && tsc-alias",
+    "build": "tsc && node ./prod-path-replacer.mjs",
     "start": "node dist/server.js",
     "test": "vitest",
     "test:watch": "vitest watch"
@@ -31,7 +31,6 @@
     "typescript": "^5.8.3"
   },
   "devDependencies": {
-    "tsc-alias": "^1.8.8",
     "tsconfig-paths": "^4.2.0",
     "vitest": "^3.1.3"
   }
