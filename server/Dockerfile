@@ -43,8 +43,8 @@ RUN cd shared && npm ci --only=production
 RUN cd server && npm ci --only=production
 
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=3000
 
-EXPOSE 8080
+EXPOSE 3000
 
 CMD ["node", "server/dist/server.js"] 

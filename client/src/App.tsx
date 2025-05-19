@@ -5,7 +5,8 @@ import { LobbyScreen } from './components/LobbyScreen';
 import { Card, CardsEvent, GameCreatedEvent, GameStartedEvent, Player, PlayersEvent, GameStateEvent, CardDrawnEvent, TrickCompleteEvent, PlayedHand, SUIT_HIERARCHY, RANK_VALUES } from './types';
 import { RulesToggle } from './components/RulesToggle';
 
-export const socket = io('http://localhost:3001');
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+export const socket = io(SERVER_URL);
 
 export function App() {
   const [playerName, setPlayerName] = useState('');

@@ -13,4 +13,7 @@ export default defineConfig({
       '@shared': resolve(__dirname, '../shared'),
     },
   },
+  define: {
+    'process.env': process.env
+  }
 });
